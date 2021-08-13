@@ -34,6 +34,8 @@ WHERE d.DepartmentCity = 'Kyiv';
 
 --7.  Знайти унікальні імена клієнтів.
 SELECT DISTINCT firstName FROM bank.client;
+----OR----
+--select distinct(firstname) from client;
 
 --8.  Вивести дані про клієнтів, які мають кредит більше ніж на 5000 тисяч гривень.
 SELECT c.LastName, c.FirstName, a.CreditState, a.Sum, a.Currency
@@ -86,13 +88,11 @@ ORDER BY AVGsum DESC
 LIMIT 1;
 
 --15. Вивести відділення, яке видало в кредити найбільше грошей
---SELECT SUM(Sum) AS borrowSum, idDepartment, DepartmentCity
---FROM application a
---         JOIN client c ON c.idClient = a.Client_idClient
---         JOIN department d ON d.idDepartment = c.Department_idDepartment
---GROUP BY idDepartment
---ORDER BY borrowSum DESC
---LIMIT 1;
+select sum(sum), department.*
+from application
+	join client on client.idClient = application.Client_idClient
+	join department on department.idDepartment = client.Department_idDepartment
+group by client.idClient order by sum(sum) desc limit 1;
 
 --16. Вивести відділення, яке видало найбільший кредит.
 SELECT MAX(Sum) AS maxCredit, idDepartment, DepartmentCity
@@ -122,17 +122,21 @@ FROM application
 WHERE CreditState = 'Returned';
 
 --20. Видалити кредити клієнтів, в яких друга літера прізвища є голосною.
-DELETE
-FROM application
-WHERE Client_idClient IN (
-    SELECT idClient
-    FROM client
-    WHERE LastName LIKE '_a%'
-       OR LastName LIKE '_e%'
-       OR LastName LIKE '_o%'
-       OR LastName LIKE '_y%'
-       OR LastName LIKE '_i%'
-       OR LastName LIKE '_u%');
+delete application from application
+    join client on client.idClient = application.Client_idClient
+where client.lastname rlike '^.[aeiouy]';
+----OR----
+--DELETE
+--FROM application
+--WHERE Client_idClient IN (
+--    SELECT idClient
+--    FROM client
+--    WHERE LastName LIKE '_a%'
+--       OR LastName LIKE '_e%'
+--       OR LastName LIKE '_o%'
+--       OR LastName LIKE '_y%'
+--       OR LastName LIKE '_i%'
+--       OR LastName LIKE '_u%');
 
 --21. Знайти львівські відділення, які видали кредитів на загальну суму більше ніж 5000.
 SELECT SUM(Sum) AS creditSum
@@ -170,15 +174,16 @@ FROM application
 WHERE Sum > (SELECT AVG(Sum) FROM application);
 
 --26. Знайти клієнтів, які є з того самого міста, що і клієнт, який взяв найбільшу кількість кредитів.
-SELECT DISTINCT idClient, LastName, FirstName, Passport
-FROM client c
-         JOIN application a ON a.Client_idClient = c.idClient
-WHERE c.City = (SELECT City
-                FROM client c2
-                         JOIN application a2 ON a2.Client_idClient = c2.idClient
-                GROUP BY idClient
-                ORDER BY COUNT(a2.Client_idClient) DESC
-                LIMIT 1);
+--SELECT DISTINCT idClient, LastName, FirstName, Passport
+--FROM client c
+--         JOIN application a ON a.Client_idClient = c.idClient
+--WHERE c.City = (SELECT City
+--                FROM client c2
+--                         JOIN application a2 ON a2.Client_idClient = c2.idClient
+--                GROUP BY idClient
+--                ORDER BY COUNT(a2.Client_idClient) DESC
+--                LIMIT 1);
+--TODO return one
 
 --27. Місто клієнта з найбільшою кількістю кредитів.
 SELECT COUNT(Client_idClient) AS creditCount, c.City, c.idClient, c.FirstName, c.LastName
