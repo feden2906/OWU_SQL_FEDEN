@@ -173,17 +173,11 @@ SELECT idApplication, CreditState, Sum, Currency
 FROM application
 WHERE Sum > (SELECT AVG(Sum) FROM application);
 
---26. Знайти клієнтів, які є з того самого міста, що і клієнт, який взяв найбільшу кількість кредитів.
---SELECT DISTINCT idClient, LastName, FirstName, Passport
---FROM client c
---         JOIN application a ON a.Client_idClient = c.idClient
---WHERE c.City = (SELECT City
---                FROM client c2
---                         JOIN application a2 ON a2.Client_idClient = c2.idClient
---                GROUP BY idClient
---                ORDER BY COUNT(a2.Client_idClient) DESC
---                LIMIT 1);
---TODO return one
+26. Знайти клієнтів, які є з того самого міста, що і клієнт, який взяв найбільшу кількість кредитів.
+select * from client join application on idClient = application.idApplication
+having City = (select City from application join client on application.Client_idClient = client.idClient
+GROUP BY idClient ORDER BY COUNT(application.Client_idClient) desc limit 1);
+
 
 --27. Місто клієнта з найбільшою кількістю кредитів.
 SELECT COUNT(Client_idClient) AS creditCount, c.City, c.idClient, c.FirstName, c.LastName
